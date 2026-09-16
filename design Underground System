@@ -1,0 +1,76 @@
+import java.util.HashMap;
+import java.util.Map;
+
+class UndergroundSystem {
+
+    // id -> [stationName, checkInTime]
+    private Map<Integer, CheckInData> checkIns;
+
+    // "start#end" -> [totalTime, numberOfTrips]
+    private Map<String, TripData> trips;
+
+    public UndergroundSystem() {
+        checkIns = new HashMap<>();
+        trips = new HashMap<>();
+    }
+
+    public void checkIn(int id, String stationName, int t) {
+        checkIns.put(id, new CheckInData(stationName, t));
+    }
+
+    public void checkOut(int id, String stationName, int t) {
+        // Get customer's check-in information
+        CheckInData data = checkIns.get(id);
+
+        String startStation = data.station;
+        int startTime = data.time;
+
+        // Calculate travel time
+        int travelTime = t - startTime;
+
+        // Create a unique key for the route
+        String key = startStation + "#" + stationName;
+
+        // Update route statistics
+        if (!trips.containsKey(key)) {
+            trips.put(key, new TripData(travelTime, 1));
+        } else {
+            TripData trip = trips.get(key);
+            trip.totalTime += travelTime;
+            trip.count++;
+        }
+
+        // Customer is no longer checked in
+        checkIns.remove(id);
+    }
+
+    public double getAverageTime(String startStation, String endStation) {
+        String key = startStation + "#" + endStation;
+
+        TripData trip = trips.get(key);
+
+        return (double) trip.totalTime / trip.count;
+    }
+
+    // Stores check-in information
+    static class CheckInData {
+        String station;
+        int time;
+
+        CheckInData(String station, int time) {
+            this.station = station;
+            this.time = time;
+        }
+    }
+
+    // Stores route information
+    static class TripData {
+        int totalTime;
+        int count;
+
+        TripData(int totalTime, int count) {
+            this.totalTime = totalTime;
+            this.count = count;
+        }
+    }
+}
